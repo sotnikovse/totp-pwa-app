@@ -1,8 +1,6 @@
 node_modules
 dist
 wasm
-local-certificates
 packages/*/CHANGELOG.md
 LICENSE.md
-pnpm-lock.yaml
-pnpm-workspace.yaml
+package-lock.json

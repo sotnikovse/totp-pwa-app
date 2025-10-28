@@ -1,12 +1,12 @@
 import {
   createAppleSplashScreens,
   defineConfig,
-  minimalPreset,
+  minimal2023Preset,
 } from '@vite-pwa/assets-generator/config'
 
 export default defineConfig({
   preset: {
-    ...minimalPreset,
+    ...minimal2023Preset,
     appleSplashScreens: createAppleSplashScreens(
       {
         padding: 0.3,

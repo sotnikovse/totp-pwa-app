@@ -102,7 +102,7 @@ section,
 
 account-list section:not([loading]):empty::after {
   color: rgb(var(--colors-gray));
-  content: 'Нет данных';
+  content: "Нет данных";
 }
 
 .button,

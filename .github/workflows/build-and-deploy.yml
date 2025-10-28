@@ -10,17 +10,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: corepack enable
-      - name: Set node version to 18
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v5
+      - name: Setup node
+        uses: actions/setup-node@v6
         with:
-          node-version: 18
-          cache: "pnpm"
-      - name: Install deps
-        run: pnpm add --global wasm-pack && pnpm install
+          node-version: 22
+          cache: "npm"
+      - name: Install dependencies
+        run: npm install --global wasm-pack && npm install
       - name: Build
-        run: pnpm wasm && pnpm build
+        run: npm wasm && npm build
       - name: Setup SSH keys
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_rsa
