@@ -23,9 +23,9 @@ import { DEFAULT_PERIOD, DEFAULT_DIGITS } from '../data/const'
 import { timerWorker } from '../main'
 import { getAccount } from '../data/db'
 import { secondsFromMs, periodSeconds } from '../utils/seconds'
-import init, { get_token } from '../../wasm/pkg/totp_wasm'
+import init, { totp } from '../../wasm/pkg/totp_wasm'
 
-export default class AccountCode extends HTMLElement {
+class AccountCode extends HTMLElement {
   private seconds: number | null = null
   private period = DEFAULT_PERIOD
 
@@ -64,15 +64,20 @@ export default class AccountCode extends HTMLElement {
     const accountId = this.getAttribute('account-id') as string
     const item = await getAccount(accountId)
     if (item) {
-      const code = get_token(
-        item.secret,
-        BigInt(this.period),
-        item.digits ?? DEFAULT_DIGITS,
-      )
-      const element =
-        this.shadowRoot?.querySelector<HTMLElement>('[part="code"]>span')
-      if (element) {
-        element.innerText = code || '-'
+      try {
+        const code = totp(
+          item.secret,
+          BigInt(this.period),
+          item.digits ?? DEFAULT_DIGITS,
+          'Sha1',
+        )
+        const element =
+          this.shadowRoot?.querySelector<HTMLElement>('[part="code"]>span')
+        if (element) {
+          element.innerText = code || '-'
+        }
+      } catch (error) {
+        throw error
       }
     }
   }
@@ -127,6 +132,8 @@ export default class AccountCode extends HTMLElement {
     }
   }
 }
+
+export default AccountCode
 
 declare global {
   interface HTMLElementTagNameMap {

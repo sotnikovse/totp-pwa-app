@@ -33,7 +33,7 @@ import { DEFAULT_PERIOD } from '../data/const'
 import AccountList from './AccountList.sfce.vue'
 import type { Account } from '../types'
 
-export default class AccountCard extends HTMLElement {
+class AccountCard extends HTMLElement {
   constructor() {
     super()
 
@@ -107,6 +107,8 @@ export default class AccountCard extends HTMLElement {
     return element
   }
 }
+
+export default AccountCard
 
 declare global {
   interface HTMLElementTagNameMap {

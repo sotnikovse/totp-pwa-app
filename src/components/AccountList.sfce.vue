@@ -3,7 +3,7 @@ import { getAccounts, addAccount, deleteAccount } from '../data/db'
 import AccountCard from './AccountCard.sfce.vue'
 import type { AccountCreateRequest } from '../types'
 
-export default class AccountList extends HTMLElement {
+class AccountList extends HTMLElement {
   constructor() {
     super()
   }
@@ -37,6 +37,8 @@ export default class AccountList extends HTMLElement {
     document.querySelector(`account-list [account-id="${id}"]`)?.remove()
   }
 }
+
+export default AccountList
 
 declare global {
   interface HTMLElementTagNameMap {

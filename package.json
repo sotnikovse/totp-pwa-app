@@ -5,21 +5,22 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vue-tsc -b && vite build",
+    "build:wasm": "wasm-pack build ./wasm --target web",
     "preview": "vite preview",
+    "typecheck": "vue-tsc -b",
     "format": "prettier --ignore-unknown --list-different --write .",
-    "wasm": "wasm-pack build ./wasm --target web",
-    "generate-pwa-assets": "pwa-assets-generator"
+    "generate:pwa-assets": "pwa-assets-generator"
   },
   "devDependencies": {
-    "@types/node": "^22.18.12",
+    "@types/node": "^22.19.0",
     "@vite-pwa/assets-generator": "^1.0.2",
-    "browserslist": "^4.27.0",
     "lightningcss": "^1.30.2",
     "prettier": "^3.6.2",
     "typescript": "^5.9.3",
     "vite": "^7.1.12",
     "vite-plugin-pwa": "^1.1.0",
-    "vite-plugin-sfce": "^0.2.3"
+    "vite-plugin-sfce": "^0.2.4",
+    "vue-tsc": "^3.1.3"
   }
 }

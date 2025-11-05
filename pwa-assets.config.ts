@@ -5,29 +5,21 @@ import {
 } from '@vite-pwa/assets-generator/config'
 
 export default defineConfig({
+  headLinkOptions: {
+    preset: '2023',
+  },
   preset: {
     ...minimal2023Preset,
     appleSplashScreens: createAppleSplashScreens(
       {
         padding: 0.3,
         resizeOptions: { background: '#fafafa', fit: 'contain' },
-        darkResizeOptions: { background: '#18181b' },
-        // by default, dark splash screens are exluded
-        // darkResizeOptions: { background: 'black' },
+        darkResizeOptions: { background: '#18181b', fit: 'contain' },
         linkMediaOptions: {
-          // will log the links you need to add to your html pages
           log: true,
-          // add screen to media attribute link?
-          // by default:
-          // <link rel="apple-touch-startup-image" href="..." media="screen and ...">
           addMediaScreen: true,
           basePath: '/',
-          // add closing link tag?
-          // by default:
-          // <link rel="apple-touch-startup-image" href="..." media="...">
-          // with xhtml enabled:
-          // <link rel="apple-touch-startup-image" href="..." media="..." />
-          xhtml: false,
+          xhtml: true,
         },
         png: {
           compressionLevel: 9,
@@ -39,7 +31,7 @@ export default defineConfig({
           }${size.width}x${size.height}.png`
         },
       },
-      ['iPad Air 9.7"'],
+      ['iPad Air 9.7"', 'iPhone X'],
     ),
   },
   images: ['public/favicon.svg'],

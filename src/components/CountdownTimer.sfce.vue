@@ -23,7 +23,7 @@
 <script lang="ts">
 import { DEFAULT_PERIOD } from '../data/const'
 
-export default class CountdownTimer extends HTMLElement {
+class CountdownTimer extends HTMLElement {
   constructor() {
     super()
 
@@ -75,6 +75,8 @@ export default class CountdownTimer extends HTMLElement {
     }
   }
 }
+
+export default CountdownTimer
 
 declare global {
   interface HTMLElementTagNameMap {

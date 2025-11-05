@@ -1,5 +1,6 @@
 node_modules
 dist
+dev-dist
 wasm
 packages/*/CHANGELOG.md
 LICENSE.md

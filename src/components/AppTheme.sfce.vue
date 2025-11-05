@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts">
-export default class AppTheme extends HTMLElement {
+class AppTheme extends HTMLElement {
   constructor() {
     super()
 
@@ -39,6 +39,8 @@ export default class AppTheme extends HTMLElement {
     }
   }
 }
+
+export default AppTheme
 
 declare global {
   interface HTMLElementTagNameMap {

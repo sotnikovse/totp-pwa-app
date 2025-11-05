@@ -1,23 +1,18 @@
-import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import vitePluginSfce from 'vite-plugin-sfce'
-import { browserslistToTargets } from 'lightningcss'
-import browserslist from 'browserslist'
 
 export default defineConfig({
   appType: 'mpa',
   css: {
     transformer: 'lightningcss',
-    lightningcss: {
-      targets: browserslistToTargets(browserslist()),
-    },
   },
   build: {
     cssMinify: 'lightningcss',
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
+        main: fileURLToPath(new URL('index.html', import.meta.url)),
       },
     },
   },
@@ -52,7 +47,6 @@ export default defineConfig({
             src: 'pwa-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any',
           },
           {
             src: 'maskable-icon-512x512.png',

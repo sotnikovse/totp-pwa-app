@@ -77,7 +77,7 @@
 import AccountList from './AccountList.sfce.vue'
 import type { AccountCreateRequest } from '../types'
 
-export default class AccountAddDialog extends HTMLElement {
+class AccountAddDialog extends HTMLElement {
   constructor() {
     super()
 
@@ -146,6 +146,8 @@ export default class AccountAddDialog extends HTMLElement {
     })
   }
 }
+
+export default AccountAddDialog
 
 declare global {
   interface HTMLElementTagNameMap {
