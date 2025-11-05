@@ -2,27 +2,29 @@
 
 ## Установка
 
-Установка [wasm-pack](https://drager.github.io/wasm-pack/installer/).
+- [`rust`](https://rust-lang.org/tools/install/)
+- [`wasm-pack`](https://drager.github.io/wasm-pack/installer/)
 
-Используется [totp-lite](https://crates.io/crates/totp-lite/2.0.1) вместо более популярного [totp-rs](https://crates.io/crates/totp-rs), т.к. totp-rs используется `std::time`, который не поддерживается `wasm-pack`.
+## Инструменты
+
+- [`wasm-bindgen`](https://github.com/wasm-bindgen/wasm-bindgen)
 
 ## Использование
+
+Сборка
 
 ```bash
 wasm-pack build --target web
 ```
 
+Тесты
+
 ```bash
 wasm-pack test --headless --firefox
 ```
 
-## 🔋 Batteries Included
+```bash
+cargo test
+```
 
-* [`wasm-bindgen`](https://github.com/wasm-bindgen/wasm-bindgen) for communicating
-  between WebAssembly and JavaScript.
-* [`console_error_panic_hook`](https://github.com/rustwasm/console_error_panic_hook)
-  for logging panic messages to the developer console.
-
-## License
-
-* MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+MIT license ([LICENSE-MIT](LICENSE-MIT))

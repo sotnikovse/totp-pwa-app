@@ -17,9 +17,11 @@ jobs:
           node-version: 22
           cache: "npm"
       - name: Install dependencies
-        run: npm install --global wasm-pack && npm install
-      - name: Build
-        run: npm wasm && npm build
+        run: cargo install wasm-pack && npm install
+      - name: Build wasm
+        run: wasm-pack build ./wasm --target web
+      - name: Build app
+        run: npm run build
       - name: Setup SSH keys
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_rsa
