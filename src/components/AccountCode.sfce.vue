@@ -19,7 +19,11 @@
 </template>
 
 <script lang="ts">
-import { DEFAULT_PERIOD, DEFAULT_DIGITS } from '../data/const'
+import {
+  DEFAULT_PERIOD,
+  DEFAULT_DIGITS,
+  DEFAULT_TOTP_ALGORITHM,
+} from '../constants'
 import { timerWorker } from '../main'
 import { getAccount } from '../data/db'
 import { secondsFromMs, periodSeconds } from '../utils/seconds'
@@ -68,8 +72,8 @@ class AccountCode extends HTMLElement {
         const code = totp(
           item.secret,
           BigInt(this.period),
-          item.digits ?? DEFAULT_DIGITS,
-          'Sha1',
+          item.digits || DEFAULT_DIGITS,
+          item.algorithm || DEFAULT_TOTP_ALGORITHM,
         )
         const element =
           this.shadowRoot?.querySelector<HTMLElement>('[part="code"]>span')

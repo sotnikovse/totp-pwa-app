@@ -179,3 +179,14 @@ account-list section:not([loading]):empty::after {
 .shrink-0 {
   flex-shrink: 0;
 }
+
+/* Мерцание компонента при инициализации */
+menu-button:not(:defined) {
+  opacity: 0;
+  visibility: hidden;
+}
+
+menu-button {
+  opacity: 1;
+  visibility: visible;
+}

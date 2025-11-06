@@ -1,4 +1,4 @@
-import { DEFAULT_PERIOD } from './data/const'
+import { DEFAULT_PERIOD } from './constants'
 import { secondsFromMs, periodSeconds } from './utils/seconds'
 
 // секунды расшареннего таймера

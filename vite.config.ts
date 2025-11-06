@@ -12,7 +12,7 @@ export default defineConfig({
     cssMinify: 'lightningcss',
     rollupOptions: {
       input: {
-        main: fileURLToPath(new URL('index.html', import.meta.url)),
+        index: fileURLToPath(new URL('index.html', import.meta.url)),
       },
     },
   },

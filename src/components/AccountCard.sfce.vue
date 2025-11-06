@@ -8,6 +8,7 @@
     </label>
   </div>
   <button
+    type="button"
     part="button button-flat button-icon button-delete"
     aria-label="Удалить"
   >
@@ -29,8 +30,9 @@
 </template>
 
 <script lang="ts">
-import { DEFAULT_PERIOD } from '../data/const'
+import { DEFAULT_PERIOD } from '../constants'
 import AccountList from './AccountList.sfce.vue'
+import { escapeHTML } from '../utils/escape'
 import type { Account } from '../types'
 
 class AccountCard extends HTMLElement {
@@ -46,8 +48,12 @@ class AccountCard extends HTMLElement {
 
   private setLabel(label: string) {
     const element = this.shadowRoot?.querySelector('label')
+    const issuer = this.getAttribute('issuer')
     if (element) {
-      element.innerHTML = decodeURIComponent(label)
+      const escapedLabel = escapeHTML(label)
+      element.innerHTML = issuer
+        ? `${escapedLabel} <small>(${escapeHTML(issuer)})</small>`
+        : escapedLabel
     }
   }
 
@@ -98,12 +104,14 @@ class AccountCard extends HTMLElement {
 
   static createElement(item: Account) {
     const element = document.createElement('account-card')
-    const period = item.period
     element.setAttribute('account-id', String(item.id))
-    element.setAttribute('label', item.label)
-    if (period) {
-      element.setAttribute('period', String(period))
+    if (item.issuer) {
+      element.setAttribute('issuer', item.issuer)
     }
+    if (item.period) {
+      element.setAttribute('period', String(item.period))
+    }
+    element.setAttribute('label', item.label)
     return element
   }
 }
@@ -137,6 +145,9 @@ declare global {
 label {
   font-size: 0.875rem;
   line-height: 1.25rem;
+}
+label > small {
+  color: rgb(var(--colors-gray));
 }
 @media (prefers-color-scheme: dark) {
   :host {

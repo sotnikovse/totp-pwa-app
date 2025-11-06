@@ -1,10 +1,10 @@
-import { DEFAULT_PERIOD } from '../data/const'
+import { DEFAULT_PERIOD } from '../constants'
 
 /**
  * миллисекунды в секунды
  *
- * @param ms - миллисекунды
- * @returns секунды
+ * @param {number} ms - миллисекунды
+ * @returns {number} - секунды
  */
 export function secondsFromMs(ms: number) {
   return Math.floor(ms / 1000)
@@ -13,9 +13,9 @@ export function secondsFromMs(ms: number) {
 /**
  * секунды в рамках указанного периода
  *
- * @param seconds - секунды
- * @param period - период в секундах
- * @returns секунды
+ * @param {number} seconds - секунды
+ * @param {number} period - период в секундах
+ * @returns {number} - секунды
  */
 export function periodSeconds(seconds: number, period = DEFAULT_PERIOD) {
   return period - (seconds % period)

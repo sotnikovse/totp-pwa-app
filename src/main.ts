@@ -5,6 +5,7 @@ import AccountCode from './components/AccountCode.sfce.vue'
 import AccountItem from './components/AccountItem.sfce.vue'
 import AccountList from './components/AccountList.sfce.vue'
 import CountdownTimer from './components/CountdownTimer.sfce.vue'
+import MenuButton from './components/MenuButton.sfce.vue'
 import { getAccount } from './data/db'
 
 customElements.define('account-add-dialog', AccountAddDialog)
@@ -13,6 +14,7 @@ customElements.define('account-code', AccountCode)
 customElements.define('account-item', AccountItem)
 customElements.define('account-list', AccountList)
 customElements.define('countdown-timer', CountdownTimer)
+customElements.define('menu-button', MenuButton)
 
 export const timerWorker = new TimerWorker()
 
@@ -36,11 +38,11 @@ async function renderItem(id?: string) {
       const titleElement = itemElement.querySelector(
         '[slot="title"]',
       ) as HTMLElement
-      titleElement.innerText = decodeURIComponent(item.label)
+      titleElement.innerText = item.label
     } else {
       const titleElement = document.createElement('h2')
       titleElement.setAttribute('slot', 'title')
-      titleElement.innerText = decodeURIComponent(item.label)
+      titleElement.innerText = item.label
       itemElement = document.createElement('account-item')
       itemElement.appendChild(titleElement)
       mainElement?.appendChild(itemElement)

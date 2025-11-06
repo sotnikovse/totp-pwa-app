@@ -18,9 +18,9 @@ enum HashAlgorithm {
 
 #[wasm_bindgen]
 pub enum TotpHashAlgorithm {
-	Sha1 = "Sha1",
-	Sha256 = "Sha256",
-	Sha512 = "Sha512",
+	Sha1 = "SHA1",
+	Sha256 = "SHA256",
+	Sha512 = "SHA512",
 }
 
 #[wasm_bindgen]

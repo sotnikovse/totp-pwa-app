@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { DEFAULT_PERIOD } from '../data/const'
+import { DEFAULT_PERIOD } from '../constants'
 
 class CountdownTimer extends HTMLElement {
   constructor() {

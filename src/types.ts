@@ -1,9 +1,13 @@
+import { TotpAlgorithmEnum } from './constants'
+
+export type TotpAlgorithm = keyof typeof TotpAlgorithmEnum
+
 export interface TOTP {
   type: 'totp'
   label: string
   secret: string
   issuer?: string
-  algorithm?: string
+  algorithm?: TotpAlgorithm
   digits?: number
   period?: number
 }
