@@ -1,43 +1,42 @@
+// расшаренный таймера
 import { DEFAULT_PERIOD } from './constants'
-import { secondsFromMs, periodSeconds } from './utils/seconds'
+import { secondsFromMs } from './utils/seconds'
 
-// секунды расшареннего таймера
-let seconds = secondsFromMs(Date.now())
 // периоды могут расширяться
 const periods = [DEFAULT_PERIOD]
 
-postSeconds(seconds)
+postSeconds(secondsFromMs(Date.now()))
 
 // тик таймера
 setInterval(() => {
-  postSeconds(++seconds)
+  postSeconds(secondsFromMs(Date.now()))
 }, 1000)
 
-// отправка тика таймера с вычисленными периодами
-function postSeconds(s: number) {
-  const periodSeconds = calcPeriodsSeconds(s)
+// отправка тика таймера и полные периоды
+function postSeconds(timestamp: number) {
   self.postMessage({
     type: 'tick',
-    ...periodSeconds,
+    message: timestamp,
   })
-}
-
-// вычисление секунд с периодами
-function calcPeriodsSeconds(s: number) {
-  return periods.reduce(
-    (acc, period) => {
-      acc[period] = periodSeconds(s, period)
-      return acc
-    },
-    {} as Record<string, number>,
-  )
+  const fullPeriods = periods.reduce<number[]>((acc, period) => {
+    if (timestamp % period === 0) {
+      acc.push(period)
+    }
+    return acc
+  }, [])
+  if (fullPeriods.length) {
+    self.postMessage({
+      type: 'period',
+      message: fullPeriods,
+    })
+  }
 }
 
 self.onmessage = (e) => {
   switch (e.data.type) {
     // расширение периодов
     case 'period':
-      const period = e.data.period
+      const period = e.data.message
       if (period && Number.isInteger(period) && !periods.includes(period)) {
         periods.push(period)
       }

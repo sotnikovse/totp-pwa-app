@@ -1,7 +1,7 @@
 <script lang="ts">
 import { getAccounts, addAccount, deleteAccount } from '../data/db'
-import AccountCard from './AccountCard.sfce.vue'
 import type { AccountCreateRequest } from '../types'
+import AccountCard from './AccountCard.sfce.vue'
 
 class AccountList extends HTMLElement {
   constructor() {

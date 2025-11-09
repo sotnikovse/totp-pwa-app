@@ -6,6 +6,13 @@ import {
 } from '../constants'
 import type { TOTP, TotpAlgorithm } from '../types'
 
+/**
+ * преобразование строки в перечисление алгоритма TOTP,
+ * значение по умолчанию `SHA1`
+ *
+ * @param {string | null | undefined} value - значение для преобразования
+ * @returns {string} алгоритм TOTP
+ */
 export function safeParseAlgorithm(value?: string | null) {
   if (!value) {
     return DEFAULT_TOTP_ALGORITHM
@@ -14,6 +21,13 @@ export function safeParseAlgorithm(value?: string | null) {
   return algorithm || DEFAULT_TOTP_ALGORITHM
 }
 
+/**
+ * преобразование строки в целое число
+ *
+ * @param {string | null | undefined} value - значение для преобразования
+ * @param {number} [defaultValue=0] - значение по умолчанию
+ * @returns {string} целое число
+ */
 export function safeParseInteger(value?: string | null, defaultValue = 0) {
   if (!value) {
     return defaultValue
@@ -22,10 +36,10 @@ export function safeParseInteger(value?: string | null, defaultValue = 0) {
 }
 
 /**
- * парсинг otpauth URI @see https://github.com/google/google-authenticator/wiki/Key-Uri-Format
+ * разбор otpauth URI @see https://github.com/google/google-authenticator/wiki/Key-Uri-Format
  *
  * @param {string} uri - URI
- * @returns {TOTP} - данные TOTP
+ * @returns {TOTP} данные TOTP
  */
 export function parseTotpauthURI(uri: string): TOTP {
   if (!uri.startsWith('otpauth://totp/')) {
@@ -84,7 +98,7 @@ export function parseTotpauthURI(uri: string): TOTP {
  * создание otpauth URI
  *
  * @param {TOTP} data - данные TOTP
- * @returns {string} - URI
+ * @returns {string} URI
  */
 export function createTotpauthURI(data: TOTP) {
   let baseUrl = 'otpauth://totp/'

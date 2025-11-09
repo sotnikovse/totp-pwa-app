@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { escapeHTML } from '../../src/utils/escape'
 
-describe('utils/sanitize.ts', () => {
+describe('utils/escape.ts', () => {
   describe('sanitizeInput', () => {
     test('Должно экранировать строку', () => {
       expect(escapeHTML('<script>alert("x")</script>')).toBe(

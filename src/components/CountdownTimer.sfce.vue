@@ -22,8 +22,15 @@
 
 <script lang="ts">
 import { DEFAULT_PERIOD } from '../constants'
+import { timerWorker } from '../main'
+import { secondsFromMs, periodSeconds } from '../utils/seconds'
 
 class CountdownTimer extends HTMLElement {
+  private period = DEFAULT_PERIOD
+  private onTimerWorkerMessageHandler: (e: MessageEvent) => void | undefined
+
+  static observedAttributes = ['period']
+
   constructor() {
     super()
 
@@ -32,46 +39,64 @@ class CountdownTimer extends HTMLElement {
       'countdown-timer-template',
     ) as HTMLTemplateElement
     shadowRoot.appendChild(template.content.cloneNode(true))
+
+    this.onTimerWorkerMessageHandler = this.onTimerWorkerMessage.bind(this)
+  }
+
+  private onTimerWorkerMessage(e: MessageEvent) {
+    if (e.data.type === 'tick') {
+      const seconds = periodSeconds(e.data.message, this.period)
+      this.setValue(seconds)
+    }
+  }
+
+  private setPeriod(val: string | number | null) {
+    this.period = Number.parseInt(val as string) || DEFAULT_PERIOD
   }
 
   private getColors(value: number) {
     return `hsl(${value * 120},100%,40%)`
   }
 
-  private setColor() {
-    const seconds = this.getAttribute('seconds')
-    const value = seconds ? Number.parseInt(seconds) : null
-    const period =
-      Number.parseInt(this.getAttribute('period') as string) || DEFAULT_PERIOD
+  private setValue(seconds?: number | null) {
     const rootElement =
       this.shadowRoot?.querySelector<HTMLElement>('div:first-of-type')
     const valueElement = rootElement?.querySelector(
       '[part="value"]',
     ) as HTMLElement
-    if (value) {
-      rootElement?.style.setProperty('color', this.getColors(value / period))
-      valueElement.innerText = String(value)
+    if (seconds) {
+      rootElement?.style.setProperty(
+        'color',
+        this.getColors(seconds / this.period),
+      )
+      valueElement.innerText = String(seconds)
     } else {
       rootElement?.style.removeProperty('color')
       valueElement.innerText = ''
     }
   }
 
-  static get observedAttributes() {
-    return ['seconds', 'period']
+  connectedCallback() {
+    this.setPeriod(this.getAttribute('period'))
+    const seconds = periodSeconds(secondsFromMs(Date.now()), this.period)
+    this.setValue(seconds)
+
+    timerWorker.addEventListener('message', this.onTimerWorkerMessageHandler)
   }
 
-  connectedCallback() {
-    this.setColor()
+  disconnectedCallback() {
+    timerWorker.removeEventListener('message', this.onTimerWorkerMessageHandler)
   }
 
   attributeChangedCallback(
-    _name: string,
-    oldValue: string | number | null,
+    name: string,
+    _oldValue: string | number | null,
     newValue: string | number | null,
   ) {
-    if (oldValue !== newValue) {
-      this.setColor()
+    switch (name) {
+      case 'period':
+        this.setPeriod(newValue)
+        break
     }
   }
 }

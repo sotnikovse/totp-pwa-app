@@ -49,9 +49,8 @@ async function renderItem(id?: string) {
     }
     itemElement.setAttribute('account-id', String(item.id))
     itemElement.setAttribute('label', item.label)
-    const period = item.period
-    if (period) {
-      itemElement.setAttribute('period', String(period))
+    if (item.period) {
+      itemElement.setAttribute('period', String(item.period))
     }
   } else {
     // скрыть кнопку назад и отобразить лого в хеадера

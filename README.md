@@ -53,6 +53,5 @@ npm run generate:pwa-assets
 
 - добавить intersect, для добавления логики только для видимых элементов
 - добавить компонент для отображения уведомлений
-- добавить [uri схема otpauth](https://github.com/google/google-authenticator/wiki/Key-Uri-Format), пример, otpauth://totp/ISSUER:LABEL?issuer=ISSUER&secret=SECRE&algorithm=SHA1&digits=6&period=30
 - импорт/экспорт данных
 - генерация qr-code

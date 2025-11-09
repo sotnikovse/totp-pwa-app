@@ -1,8 +1,9 @@
 <template>
   <slot name="title"></slot>
   <section part="section">
-    <div>
+    <div class="code-container">
       <account-code></account-code>
+      <countdown-timer></countdown-timer>
     </div>
     <dl></dl>
     <div>
@@ -18,12 +19,16 @@
 
 <script lang="ts">
 import { DEFAULT_PERIOD } from '../constants'
-import AccountList from './AccountList.sfce.vue'
 import { getAccount } from '../data/db'
-import { createTotpauthURI } from '../utils/otpauth'
 import { escapeHTML } from '../utils/escape'
+import { createTotpauthURI } from '../utils/otpauth'
+import AccountList from './AccountList.sfce.vue'
 
 class AccountItem extends HTMLElement {
+  private period = DEFAULT_PERIOD
+
+  static observedAttributes = ['account-id', 'period']
+
   constructor() {
     super()
 
@@ -34,33 +39,14 @@ class AccountItem extends HTMLElement {
     shadowRoot.appendChild(template.content.cloneNode(true))
   }
 
-  static get observedAttributes() {
-    return ['account-id', 'period']
-  }
-
-  connectedCallback() {
+  private setPeriod(val: string | number | null) {
+    this.period = Number.parseInt(val as string) || DEFAULT_PERIOD
     this.shadowRoot
-      ?.querySelector('.delete-button')
-      ?.addEventListener('click', async () => {
-        const accountId = this.getAttribute('account-id') as string
-        const result = confirm('Вы уверены что хотите удалить?')
-        if (result) {
-          await AccountList.deleteItem(accountId)
-          history.length > 2 ? history.back() : location.replace('/')
-        }
-      })
-
+      ?.querySelector('account-code')
+      ?.setAttribute('period', String(this.period))
     this.shadowRoot
-      ?.querySelector('.copy-link-button')
-      ?.addEventListener('click', async () => {
-        const accountId = this.getAttribute('account-id') as string
-        const data = await getAccount(accountId)
-        if (data) {
-          const uri = createTotpauthURI(data)
-          navigator.clipboard.writeText(uri)
-          console.log('Скопировано!', uri)
-        }
-      })
+      ?.querySelector('countdown-timer')
+      ?.setAttribute('period', String(this.period))
   }
 
   private async updateDescription(accountId: string) {
@@ -103,6 +89,33 @@ class AccountItem extends HTMLElement {
     return `<dt>${escapeHTML(label)}</dt><dd>${escapeHTML(value)}</dd>`
   }
 
+  connectedCallback() {
+    this.shadowRoot
+      ?.querySelector('.delete-button')
+      ?.addEventListener('click', async () => {
+        const accountId = this.getAttribute('account-id') as string
+        const result = confirm('Вы уверены что хотите удалить?')
+        if (result) {
+          await AccountList.deleteItem(accountId)
+          history.length > 2 ? history.back() : location.replace('/')
+        }
+      })
+
+    this.shadowRoot
+      ?.querySelector('.copy-link-button')
+      ?.addEventListener('click', async () => {
+        const accountId = this.getAttribute('account-id') as string
+        const data = await getAccount(accountId)
+        if (data) {
+          const uri = createTotpauthURI(data)
+          navigator.clipboard.writeText(uri)
+          console.log('Скопировано!', uri)
+        }
+      })
+
+    this.setPeriod(this.getAttribute('period'))
+  }
+
   attributeChangedCallback(
     name: string,
     _oldValue: string | number | null,
@@ -118,9 +131,7 @@ class AccountItem extends HTMLElement {
         }
         break
       case 'period':
-        this.shadowRoot
-          ?.querySelector<HTMLElement>('account-code')
-          ?.setAttribute('period', String(newValue || DEFAULT_PERIOD))
+        this.setPeriod(newValue)
         break
     }
   }
@@ -136,6 +147,12 @@ declare global {
 </script>
 
 <style>
+.code-container {
+  display: flex;
+  align-items: center;
+  column-gap: 0.5rem;
+}
+
 .delete-button {
   margin-left: 0.5rem;
 }
@@ -154,5 +171,11 @@ dl > dt {
 dl > dd {
   margin-left: 1rem;
   grid-column-start: 2;
+}
+
+@media (prefers-color-scheme: dark) {
+  dl {
+    color: rgb(var(--colors-gray-light));
+  }
 }
 </style>

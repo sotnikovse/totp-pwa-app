@@ -167,7 +167,6 @@
 </template>
 
 <script lang="ts">
-import AccountList from './AccountList.sfce.vue'
 import { DEFAULT_PERIOD, DEFAULT_DIGITS } from '../constants'
 import {
   parseTotpauthURI,
@@ -175,6 +174,7 @@ import {
   safeParseInteger,
 } from '../utils/otpauth'
 import type { AccountCreateRequest } from '../types'
+import AccountList from './AccountList.sfce.vue'
 
 class AccountAddDialog extends HTMLElement {
   constructor() {

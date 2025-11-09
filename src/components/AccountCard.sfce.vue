@@ -27,15 +27,27 @@
       />
     </svg>
   </button>
+  <div class="progress">
+    <div class="progress__track"></div>
+    <div class="progress__indicator"></div>
+  </div>
 </template>
 
 <script lang="ts">
 import { DEFAULT_PERIOD } from '../constants'
-import AccountList from './AccountList.sfce.vue'
+import { timerWorker } from '../main'
 import { escapeHTML } from '../utils/escape'
+import { periodSeconds } from '../utils/seconds'
 import type { Account } from '../types'
+import AccountList from './AccountList.sfce.vue'
 
 class AccountCard extends HTMLElement {
+  private period = DEFAULT_PERIOD
+  private animationId: number | null = null
+  private onTimerWorkerMessageHandler: (e: MessageEvent) => void | undefined
+
+  static observedAttributes = ['label', 'period']
+
   constructor() {
     super()
 
@@ -44,6 +56,50 @@ class AccountCard extends HTMLElement {
       'account-card-template',
     ) as HTMLTemplateElement
     shadowRoot.appendChild(template.content.cloneNode(true))
+
+    this.onTimerWorkerMessageHandler = this.onTimerWorkerMessage.bind(this)
+  }
+
+  private startAnimation() {
+    let indicatorElemenet = this.shadowRoot?.querySelector<HTMLElement>(
+      '.progress__indicator',
+    )
+    if (!indicatorElemenet) {
+      return
+    }
+
+    const periodMs = this.period * 1000
+    const duration = periodSeconds(Date.now(), periodMs)
+
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId)
+      this.animationId = null
+    }
+
+    let startTimestamp: number = 0
+    indicatorElemenet.style.width = '100%'
+
+    const animate = (timestamp: number) => {
+      if (!startTimestamp) {
+        startTimestamp = timestamp
+      }
+      const elapsed = timestamp - startTimestamp
+      const percent = Math.max(
+        0,
+        Math.min(100, (100 * (duration - elapsed)) / duration),
+      )
+      if (percent > 0) {
+        indicatorElemenet.style.width = `${percent}%`
+        this.animationId = requestAnimationFrame(animate)
+      }
+    }
+    this.animationId = requestAnimationFrame(animate)
+  }
+
+  private onTimerWorkerMessage(e: MessageEvent) {
+    if (e.data.type === 'period' && e.data.message.includes(this.period)) {
+      this.startAnimation()
+    }
   }
 
   private setLabel(label: string) {
@@ -57,11 +113,9 @@ class AccountCard extends HTMLElement {
     }
   }
 
-  static get observedAttributes() {
-    return ['label', 'period']
-  }
-
   connectedCallback() {
+    this.startAnimation()
+
     const accountId = this.getAttribute('account-id') as string
 
     this.shadowRoot
@@ -81,6 +135,12 @@ class AccountCard extends HTMLElement {
     this.shadowRoot?.addEventListener('click', () => {
       location.assign(`#${accountId}`)
     })
+
+    timerWorker.addEventListener('message', this.onTimerWorkerMessageHandler)
+  }
+
+  disconnectedCallback() {
+    timerWorker.removeEventListener('message', this.onTimerWorkerMessageHandler)
   }
 
   attributeChangedCallback(
@@ -95,9 +155,10 @@ class AccountCard extends HTMLElement {
         }
         break
       case 'period':
+        this.period = Number.parseInt(newValue as string) || DEFAULT_PERIOD
         this.shadowRoot
           ?.querySelector('account-code')
-          ?.setAttribute('period', String(newValue || DEFAULT_PERIOD))
+          ?.setAttribute('period', String(this.period))
         break
     }
   }
@@ -127,6 +188,7 @@ declare global {
 
 <style>
 :host {
+  position: relative;
   display: flex;
   align-items: center;
   border-radius: 0.5rem;
@@ -137,6 +199,34 @@ declare global {
     0 1px 3px 0 rgb(0 0 0 / 0.1),
     0 1px 2px -1px rgb(0 0 0 / 0.1);
 }
+
+.progress {
+  position: absolute;
+  width: 100%;
+  height: 0.5rem;
+  bottom: 0;
+  left: 0;
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  overflow: hidden;
+}
+.progress__track {
+  background-color: rgb(var(--colors-gray-light) / 0.5);
+  position: absolute;
+  width: 100%;
+  height: 0.1875rem;
+  bottom: 0;
+  left: 0;
+}
+.progress__indicator {
+  background-color: rgb(var(--colors-gray-light));
+  position: absolute;
+  width: 100%;
+  height: 0.1875rem;
+  bottom: 0;
+  left: 0;
+}
+
 :host > div:first-of-type {
   flex-grow: 1;
   display: flex;
@@ -147,12 +237,23 @@ label {
   line-height: 1.25rem;
 }
 label > small {
-  color: rgb(var(--colors-gray));
+  color: rgb(var(--colors-gray-dark));
 }
+
 @media (prefers-color-scheme: dark) {
   :host {
     box-shadow: none;
     background-color: rgb(var(--colors-gray-dark) / 0.25);
+  }
+  label > small {
+    color: rgb(var(--colors-gray-light));
+  }
+
+  .progress__track {
+    background-color: rgb(var(--colors-gray-dark) / 0.5);
+  }
+  .progress__indicator {
+    background-color: rgb(var(--colors-gray-dark));
   }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div part="code" role="button">
+  <div role="button">
     <span></span>
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -15,7 +15,6 @@
       />
     </svg>
   </div>
-  <countdown-timer></countdown-timer>
 </template>
 
 <script lang="ts">
@@ -26,12 +25,13 @@ import {
 } from '../constants'
 import { timerWorker } from '../main'
 import { getAccount } from '../data/db'
-import { secondsFromMs, periodSeconds } from '../utils/seconds'
 import init, { totp } from '../../wasm/pkg/totp_wasm'
 
 class AccountCode extends HTMLElement {
-  private seconds: number | null = null
   private period = DEFAULT_PERIOD
+  private onTimerWorkerMessageHandler: (e: MessageEvent) => void | undefined
+
+  static observedAttributes = ['period']
 
   constructor() {
     super()
@@ -41,27 +41,19 @@ class AccountCode extends HTMLElement {
       'account-code-template',
     ) as HTMLTemplateElement
     shadowRoot.appendChild(template.content.cloneNode(true))
+
+    this.onTimerWorkerMessageHandler = this.onTimerWorkerMessage.bind(this)
   }
 
-  private setSeconds(val: number | null) {
-    if (!val) {
-      return
+  private onTimerWorkerMessage(e: MessageEvent) {
+    if (e.data.type === 'period' && e.data.message.includes(this.period)) {
+      this.setCode()
     }
-    this.seconds = val
-    this.shadowRoot
-      ?.querySelector('countdown-timer')
-      ?.setAttribute('seconds', String(this.seconds))
   }
 
   private setPeriod(val: string | number | null) {
-    if (!val) {
-      return
-    }
     this.period = Number.parseInt(val as string) || DEFAULT_PERIOD
-    timerWorker.postMessage({ type: 'period', period: this.period })
-    this.shadowRoot
-      ?.querySelector('countdown-timer')
-      ?.setAttribute('period', String(this.period))
+    timerWorker.postMessage({ type: 'period', message: this.period })
   }
 
   private async setCode() {
@@ -75,8 +67,9 @@ class AccountCode extends HTMLElement {
           item.digits || DEFAULT_DIGITS,
           item.algorithm || DEFAULT_TOTP_ALGORITHM,
         )
-        const element =
-          this.shadowRoot?.querySelector<HTMLElement>('[part="code"]>span')
+        const element = this.shadowRoot?.querySelector<HTMLElement>(
+          '[role="button"] > span',
+        )
         if (element) {
           element.innerText = code || '-'
         }
@@ -84,10 +77,6 @@ class AccountCode extends HTMLElement {
         throw error
       }
     }
-  }
-
-  static get observedAttributes() {
-    return ['period']
   }
 
   async connectedCallback() {
@@ -107,21 +96,13 @@ class AccountCode extends HTMLElement {
       })
 
     this.setPeriod(this.getAttribute('period'))
-    const seconds = periodSeconds(secondsFromMs(Date.now()), this.period)
-    this.setSeconds(seconds)
     this.setCode()
 
-    timerWorker.addEventListener('message', (e) => {
-      switch (e.data.type) {
-        case 'tick':
-          const seconds = e.data[this.period]
-          this.setSeconds(seconds)
-          if (seconds === this.period) {
-            this.setCode()
-          }
-          break
-      }
-    })
+    timerWorker.addEventListener('message', this.onTimerWorkerMessageHandler)
+  }
+
+  disconnectedCallback() {
+    timerWorker.removeEventListener('message', this.onTimerWorkerMessageHandler)
   }
 
   attributeChangedCallback(
@@ -152,7 +133,7 @@ declare global {
   display: flex;
   align-items: center;
 }
-[part='code'] {
+[role='button'] {
   font-size: 1.875rem;
   font-weight: 500;
   letter-spacing: 0.1em;
@@ -163,37 +144,29 @@ declare global {
   border-radius: 0.5rem;
   background-color: rgb(var(--colors-gray-light) / 0.15);
 }
-[part='code']:hover {
+[role='button']:hover {
   background-color: rgb(var(--colors-gray-light) / 0.3);
 }
 @media (prefers-color-scheme: dark) {
-  [part='code'] {
+  [role='button'] {
     background-color: rgb(var(--colors-gray-dark) / 0.15);
   }
-  [part='code']:hover {
+  [role='button']:hover {
     background-color: rgb(var(--colors-gray-dark) / 0.3);
   }
 }
-:host([card]) [part='code'] {
+:host([card]) [role='button'] {
   font-size: 1.25rem;
   padding: 0;
   border-radius: 0;
   background-color: transparent;
 }
-[part='code'] svg {
+[role='button'] svg {
   width: 0.8em;
   height: 0.8em;
   color: rgb(var(--colors-gray));
 }
-[part='code']:hover svg {
+[role='button']:hover svg {
   color: rgb(var(--colors-text));
-}
-countdown-timer {
-  margin-left: 0.5rem;
-}
-:host([card]) countdown-timer {
-  position: absolute;
-  top: 0;
-  right: 0;
 }
 </style>

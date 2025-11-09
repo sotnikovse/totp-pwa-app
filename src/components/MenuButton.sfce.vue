@@ -16,6 +16,7 @@ class MenuButton extends HTMLElement {
   private contentId: string = `menu-content-${_id}`
   private buttonElement: HTMLElement | undefined
   private contentElement: HTMLElement | undefined
+  private documentClickHandler: () => void | undefined
 
   constructor() {
     super()
@@ -27,6 +28,26 @@ class MenuButton extends HTMLElement {
       'menu-button-template',
     ) as HTMLTemplateElement
     shadowRoot.appendChild(template.content.cloneNode(true))
+
+    this.documentClickHandler = this.close.bind(this)
+  }
+
+  private open() {
+    this.buttonElement?.setAttribute('aria-expanded', 'true')
+    this.buttonElement?.setAttribute('aria-controls', this.contentId)
+    if (this.contentElement) {
+      this.contentElement.dataset.status = 'opened'
+    }
+    this.isOpened = true
+  }
+
+  private close() {
+    this.buttonElement?.removeAttribute('aria-expanded')
+    this.buttonElement?.removeAttribute('aria-controls')
+    if (this.contentElement) {
+      this.contentElement.dataset.status = 'closed'
+    }
+    this.isOpened = false
   }
 
   connectedCallback() {
@@ -61,27 +82,11 @@ class MenuButton extends HTMLElement {
       }
     }
 
-    document.addEventListener('click', () => {
-      this.close()
-    })
+    document.addEventListener('click', this.documentClickHandler)
   }
 
-  private open() {
-    this.buttonElement?.setAttribute('aria-expanded', 'true')
-    this.buttonElement?.setAttribute('aria-controls', this.contentId)
-    if (this.contentElement) {
-      this.contentElement.dataset.status = 'opened'
-    }
-    this.isOpened = true
-  }
-
-  private close() {
-    this.buttonElement?.removeAttribute('aria-expanded')
-    this.buttonElement?.removeAttribute('aria-controls')
-    if (this.contentElement) {
-      this.contentElement.dataset.status = 'closed'
-    }
-    this.isOpened = false
+  disconnectedCallback() {
+    document.removeEventListener('click', this.documentClickHandler)
   }
 }
 
