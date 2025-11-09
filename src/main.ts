@@ -4,6 +4,7 @@ import AccountCard from './components/AccountCard.sfce.vue'
 import AccountCode from './components/AccountCode.sfce.vue'
 import AccountItem from './components/AccountItem.sfce.vue'
 import AccountList from './components/AccountList.sfce.vue'
+import AppToaster from './components/AppToaster.sfce.vue'
 import CountdownTimer from './components/CountdownTimer.sfce.vue'
 import MenuButton from './components/MenuButton.sfce.vue'
 import { getAccount } from './data/db'
@@ -13,6 +14,7 @@ customElements.define('account-card', AccountCard)
 customElements.define('account-code', AccountCode)
 customElements.define('account-item', AccountItem)
 customElements.define('account-list', AccountList)
+customElements.define('app-toaster', AppToaster)
 customElements.define('countdown-timer', CountdownTimer)
 customElements.define('menu-button', MenuButton)
 

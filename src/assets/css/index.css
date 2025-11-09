@@ -111,9 +111,11 @@ account-list section:not([loading]):empty::after {
   font-size: 1rem;
 }
 
-.button:hover,
-::part(button):hover {
-  color: rgb(var(--colors-primary));
+@media (hover: hover) {
+  .button:hover,
+  ::part(button):hover {
+    color: rgb(var(--colors-primary));
+  }
 }
 
 .button-flat,
@@ -131,9 +133,11 @@ account-list section:not([loading]):empty::after {
 ::part(button-delete) {
   color: rgb(var(--colors-text));
 }
-.button-delete:hover,
-::part(button-delete):hover {
-  color: rgb(var(--colors-red));
+@media (hover: hover) {
+  .button-delete:hover,
+  ::part(button-delete):hover {
+    color: rgb(var(--colors-red));
+  }
 }
 
 .button-back {

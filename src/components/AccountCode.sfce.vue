@@ -26,10 +26,12 @@ import {
 import { timerWorker } from '../main'
 import { getAccount } from '../data/db'
 import init, { totp } from '../../wasm/pkg/totp_wasm'
+import AppToaster from './AppToaster.sfce.vue'
 
 class AccountCode extends HTMLElement {
   private period = DEFAULT_PERIOD
   private onTimerWorkerMessageHandler: (e: MessageEvent) => void | undefined
+  private errorMessage = ''
 
   static observedAttributes = ['period']
 
@@ -51,12 +53,27 @@ class AccountCode extends HTMLElement {
     }
   }
 
+  private setError(message: string) {
+    this.errorMessage = message
+    this.classList.add('error')
+    const element = this.shadowRoot?.querySelector<HTMLElement>(
+      '[role="button"] > span',
+    )
+    if (element) {
+      element.innerText = this.errorMessage
+    }
+    this.dispatchEvent(new ErrorEvent('error', { message }))
+  }
+
   private setPeriod(val: string | number | null) {
     this.period = Number.parseInt(val as string) || DEFAULT_PERIOD
     timerWorker.postMessage({ type: 'period', message: this.period })
   }
 
   private async setCode() {
+    if (this.errorMessage) {
+      return
+    }
     const accountId = this.getAttribute('account-id') as string
     const item = await getAccount(accountId)
     if (item) {
@@ -74,6 +91,13 @@ class AccountCode extends HTMLElement {
           element.innerText = code || '-'
         }
       } catch (error) {
+        let message = 'Ошибка получения кода'
+        if ((error as Error).message === 'Invalid base32 secret') {
+          message = 'Невалидный секрет'
+        } else if ((error as Error).message === 'Invalid algorithm') {
+          message = 'Невалидный алгоритм'
+        }
+        this.setError(message)
         throw error
       }
     }
@@ -88,10 +112,17 @@ class AccountCode extends HTMLElement {
       ?.querySelector('[role="button"]')
       ?.addEventListener('click', (e) => {
         e.stopPropagation()
+        if (this.errorMessage) {
+          return
+        }
         const text = codeElement?.innerText
         if (text) {
-          navigator.clipboard.writeText(text)
-          console.log('Скопировано!', codeElement.innerText)
+          try {
+            navigator.clipboard.writeText(text)
+            AppToaster.showToast('Скопировано!', 'info')
+          } catch (error) {
+            AppToaster.showToast('Не удалось скопировать!', 'error')
+          }
         }
       })
 
@@ -144,15 +175,20 @@ declare global {
   border-radius: 0.5rem;
   background-color: rgb(var(--colors-gray-light) / 0.15);
 }
-[role='button']:hover {
-  background-color: rgb(var(--colors-gray-light) / 0.3);
+@media (hover: hover) {
+  :host(:not(.error)) [role='button']:hover {
+    background-color: rgb(var(--colors-gray-light) / 0.3);
+  }
 }
+
 @media (prefers-color-scheme: dark) {
   [role='button'] {
     background-color: rgb(var(--colors-gray-dark) / 0.15);
   }
-  [role='button']:hover {
-    background-color: rgb(var(--colors-gray-dark) / 0.3);
+  @media (hover: hover) {
+    :host(:not(.error)) [role='button']:hover {
+      background-color: rgb(var(--colors-gray-dark) / 0.3);
+    }
   }
 }
 :host([card]) [role='button'] {
@@ -166,7 +202,20 @@ declare global {
   height: 0.8em;
   color: rgb(var(--colors-gray));
 }
-[role='button']:hover svg {
-  color: rgb(var(--colors-text));
+
+:host(.error) [role='button'] {
+  cursor: default;
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  color: rgb(var(--colors-red));
+}
+:host(.error) svg {
+  display: none;
+}
+@media (hover: hover) {
+  [role='button']:hover svg {
+    color: rgb(var(--colors-text));
+  }
 }
 </style>

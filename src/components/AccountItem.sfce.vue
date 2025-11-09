@@ -23,6 +23,7 @@ import { getAccount } from '../data/db'
 import { escapeHTML } from '../utils/escape'
 import { createTotpauthURI } from '../utils/otpauth'
 import AccountList from './AccountList.sfce.vue'
+import AppToaster from './AppToaster.sfce.vue'
 
 class AccountItem extends HTMLElement {
   private period = DEFAULT_PERIOD
@@ -108,12 +109,22 @@ class AccountItem extends HTMLElement {
         const data = await getAccount(accountId)
         if (data) {
           const uri = createTotpauthURI(data)
-          navigator.clipboard.writeText(uri)
-          console.log('Скопировано!', uri)
+          try {
+            navigator.clipboard.writeText(uri)
+            AppToaster.showToast('Скопировано!', 'info')
+          } catch (error) {
+            AppToaster.showToast('Не удалось скопировать!', 'error')
+          }
         }
       })
 
     this.setPeriod(this.getAttribute('period'))
+
+    this.shadowRoot
+      ?.querySelector('account-code')
+      ?.addEventListener('error', () => {
+        this.classList.add('error')
+      })
   }
 
   attributeChangedCallback(
@@ -147,6 +158,10 @@ declare global {
 </script>
 
 <style>
+:host(.error) countdown-timer {
+  display: none;
+}
+
 .code-container {
   display: flex;
   align-items: center;

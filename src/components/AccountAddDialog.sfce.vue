@@ -175,6 +175,7 @@ import {
 } from '../utils/otpauth'
 import type { AccountCreateRequest } from '../types'
 import AccountList from './AccountList.sfce.vue'
+import AppToaster from './AppToaster.sfce.vue'
 
 class AccountAddDialog extends HTMLElement {
   constructor() {
@@ -288,6 +289,7 @@ class AccountAddDialog extends HTMLElement {
         try {
           await AccountList.addItem(data)
         } catch (error) {
+          AppToaster.showToast((error as Error).message, 'error')
           throw error
         }
         addForm.reset()
@@ -309,6 +311,7 @@ class AccountAddDialog extends HTMLElement {
               const data = parseTotpauthURI(uri)
               await AccountList.addItem(data)
             } catch (error) {
+              AppToaster.showToast((error as Error).message, 'error')
               throw error
             }
           }

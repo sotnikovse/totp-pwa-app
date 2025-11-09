@@ -142,8 +142,10 @@ declare global {
   text-align: left;
 }
 
-::slotted([role='menuitem']:hover) {
-  background-color: #e5e5e5;
+@media (hover: hover) {
+  ::slotted([role='menuitem']:hover) {
+    background-color: #e5e5e5;
+  }
 }
 
 ::slotted([role='menuitem']:first-of-type) {
@@ -160,8 +162,10 @@ declare global {
   [role='menu'] {
     background-color: #262626;
   }
-  ::slotted([role='menuitem']:hover) {
-    background-color: #171717;
+  @media (hover: hover) {
+    ::slotted([role='menuitem']:hover) {
+      background-color: #404040;
+    }
   }
 }
 </style>

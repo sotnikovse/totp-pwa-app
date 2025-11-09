@@ -44,6 +44,7 @@ import AccountList from './AccountList.sfce.vue'
 class AccountCard extends HTMLElement {
   private period = DEFAULT_PERIOD
   private animationId: number | null = null
+  private errorMessage = ''
   private onTimerWorkerMessageHandler: (e: MessageEvent) => void | undefined
 
   static observedAttributes = ['label', 'period']
@@ -60,11 +61,19 @@ class AccountCard extends HTMLElement {
     this.onTimerWorkerMessageHandler = this.onTimerWorkerMessage.bind(this)
   }
 
+  private setError(message: string) {
+    this.errorMessage = message
+    this.classList.add('error')
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId)
+    }
+  }
+
   private startAnimation() {
     let indicatorElemenet = this.shadowRoot?.querySelector<HTMLElement>(
       '.progress__indicator',
     )
-    if (!indicatorElemenet) {
+    if (!indicatorElemenet || this.errorMessage) {
       return
     }
 
@@ -135,6 +144,12 @@ class AccountCard extends HTMLElement {
     this.shadowRoot?.addEventListener('click', () => {
       location.assign(`#${accountId}`)
     })
+
+    this.shadowRoot
+      ?.querySelector('account-code')
+      ?.addEventListener('error', (e) => {
+        this.setError(e.message)
+      })
 
     timerWorker.addEventListener('message', this.onTimerWorkerMessageHandler)
   }
@@ -225,6 +240,9 @@ declare global {
   height: 0.1875rem;
   bottom: 0;
   left: 0;
+}
+:host(.error) .progress__indicator {
+  background-color: rgb(var(--colors-red) / 0.5);
 }
 
 :host > div:first-of-type {
