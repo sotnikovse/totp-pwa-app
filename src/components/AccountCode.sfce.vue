@@ -110,7 +110,7 @@ class AccountCode extends HTMLElement {
 
     this.shadowRoot
       ?.querySelector('[role="button"]')
-      ?.addEventListener('click', (e) => {
+      ?.addEventListener('click', async (e) => {
         e.stopPropagation()
         if (this.errorMessage) {
           return
@@ -118,10 +118,13 @@ class AccountCode extends HTMLElement {
         const text = codeElement?.innerText
         if (text) {
           try {
-            navigator.clipboard.writeText(text)
+            await navigator.clipboard.writeText(text)
             AppToaster.showToast('Код скопирован!', 'info')
           } catch (error) {
-            AppToaster.showToast('Не удалось скопировать код!', 'error')
+            AppToaster.showToast(
+              `Не удалось скопировать: ${(error as Error).message}`,
+              'error',
+            )
           }
         }
       })

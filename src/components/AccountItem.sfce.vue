@@ -108,12 +108,15 @@ class AccountItem extends HTMLElement {
         const accountId = this.getAttribute('account-id') as string
         const data = await getAccount(accountId)
         if (data) {
-          const uri = createTotpauthURI(data)
           try {
-            navigator.clipboard.writeText(uri)
+            const uri = createTotpauthURI(data)
+            await navigator.clipboard.writeText(uri)
             AppToaster.showToast('Ссылка скопирована!', 'info')
           } catch (error) {
-            AppToaster.showToast('Не удалось скопировать ссылку!', 'error')
+            AppToaster.showToast(
+              `Не удалось скопировать: ${(error as Error).message}`,
+              'error',
+            )
           }
         }
       })
