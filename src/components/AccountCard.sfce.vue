@@ -39,6 +39,7 @@ import { escapeHTML } from '../utils/escape'
 import { periodSeconds } from '../utils/seconds'
 import type { Account } from '../types'
 import AccountList from './AccountList.sfce.vue'
+import AppToaster from './AppToaster.sfce.vue'
 
 class AccountCard extends HTMLElement {
   private period = DEFAULT_PERIOD
@@ -136,7 +137,15 @@ class AccountCard extends HTMLElement {
         e.stopPropagation()
         const result = confirm('Вы уверены что хотите удалить?')
         if (result) {
-          await AccountList.deleteItem(accountId)
+          try {
+            await AccountList.deleteItem(accountId)
+            AppToaster.showToast('Аккаунт удален', 'info')
+          } catch (error) {
+            AppToaster.showToast(
+              `Не удалось удалить аккаунт.\n${(error as Error).message}`,
+              'error',
+            )
+          }
         }
       })
 

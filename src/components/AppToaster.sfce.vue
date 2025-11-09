@@ -5,17 +5,25 @@
 <script lang="ts">
 type ToasterType = 'info' | 'warning' | 'error'
 
+type ToasterLink = {
+  text: string
+  url: string
+}
+
 type ToasterItem = {
   id: string
-  type?: ToasterType
   message: string
+  type?: ToasterType
+  duration?: number
+  link?: ToasterLink
 }
+
+const DEFAULT_DURATION = 5000
 
 let _id = 0
 let toasterProxy: Record<string, ToasterItem> = {}
 
 class AppToaster extends HTMLElement {
-  private duration = 5000
   private timersMap: Record<string, number> = {}
   private itemsMap: Record<string, ToasterItem> = {}
 
@@ -46,16 +54,27 @@ class AppToaster extends HTMLElement {
   }
 
   private _showToast(item: ToasterItem) {
-    const element = document.createElement('div')
-    element.id = item.id
-    element.classList = `toaster-item toaster-item_${item.type}`
-    element.innerText = item.message
-    element.onclick = () => this._removeToast(item.id)
-    this.shadowRoot?.querySelector('.toaster-wrapper')?.appendChild(element)
+    const rootElement = document.createElement('div')
+    rootElement.id = item.id
+    rootElement.className = `toaster-item toaster-item_${item.type}`
+    rootElement.onclick = () => this._removeToast(item.id)
+    if (item.link) {
+      const contentElement = document.createElement('span')
+      contentElement.innerText = item.message
+      rootElement.appendChild(contentElement)
+      const linkElement = document.createElement('a')
+      linkElement.className = 'toaster-item__link'
+      linkElement.href = item.link.url
+      linkElement.innerText = item.link.text
+      rootElement.appendChild(linkElement)
+    } else {
+      rootElement.innerText = item.message
+    }
+    this.shadowRoot?.querySelector('.toaster-wrapper')?.appendChild(rootElement)
 
     this.timersMap[item.id] = setTimeout(() => {
       this._removeToast(item.id)
-    }, this.duration)
+    }, item.duration || DEFAULT_DURATION)
   }
 
   private _removeToast(id: string) {
@@ -65,10 +84,15 @@ class AppToaster extends HTMLElement {
     this.shadowRoot?.getElementById(id)?.remove()
   }
 
-  static showToast(message: string, type?: ToasterType) {
+  static showToast(
+    message: string,
+    type?: ToasterType,
+    duration = DEFAULT_DURATION,
+    link?: ToasterLink,
+  ) {
     const id = `toast-${++_id}`
     if (toasterProxy) {
-      toasterProxy[id] = { id: `toast-${++_id}`, message, type }
+      toasterProxy[id] = { id: `toast-${++_id}`, message, type, duration, link }
     }
   }
 
@@ -117,7 +141,19 @@ declare global {
   color: rgb(var(--colors-white));
   background-color: rgb(var(--colors-gray));
   cursor: default;
+  white-space: pre-wrap;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  column-gap: 0.5rem;
 }
+
+.toaster-item__link {
+  text-decoration: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
 .toaster-item_info {
   background-color: rgb(var(--colors-primary));
 }

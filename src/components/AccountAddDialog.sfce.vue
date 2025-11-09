@@ -23,8 +23,11 @@
       </svg>
     </button>
     <div slot="item" id="add-menuitem">Добавить вручную</div>
-    <div slot="item" id="import-menuitem">Импорт ссылки</div>
+    <div slot="item" id="import-menuitem">Импорт из ссылки</div>
+    <div slot="item" id="file-menuitem">Импорт из файла</div>
   </menu-button>
+
+  <input id="file-input" type="file" accept=".zip" tabindex="-1" />
 
   <dialog
     id="add-dialog"
@@ -168,6 +171,7 @@
 
 <script lang="ts">
 import { DEFAULT_PERIOD, DEFAULT_DIGITS } from '../constants'
+import { decompressFile } from '../utils/compress'
 import {
   parseTotpauthURI,
   safeParseAlgorithm,
@@ -228,6 +232,29 @@ class AccountAddDialog extends HTMLElement {
     importMenuItem?.removeAttribute('aria-controls')
   }
 
+  private async addAccountsFromUris(text: string) {
+    const lines = text
+      .split('\n')
+      .map((item) => item.trim())
+      .filter((item) => item)
+    for (const uri of lines) {
+      const data = parseTotpauthURI(uri)
+      try {
+        const { id } = await AccountList.addItem(data)
+        AppToaster.showToast(`Добавлен аккаунт: ${data.label}`, 'info', 8000, {
+          text: 'Перейти',
+          url: `/#${id}`,
+        })
+      } catch (error) {
+        AppToaster.showToast(
+          `Не удалось добавить аккаунт: ${data.label}.\n${(error as Error).message}`,
+          'error',
+        )
+        throw error
+      }
+    }
+  }
+
   connectedCallback() {
     const addMenuItem = this.shadowRoot?.getElementById('add-menuitem') as
       | HTMLElement
@@ -255,12 +282,41 @@ class AccountAddDialog extends HTMLElement {
       'import-form-cancel',
     ) as HTMLButtonElement
 
+    const fileMenuItem = this.shadowRoot?.getElementById('file-menuitem') as
+      | HTMLElement
+      | undefined
+    const fileInput = this.shadowRoot?.getElementById('file-input') as
+      | HTMLInputElement
+      | undefined
+
     addMenuItem?.addEventListener('click', () => {
       this.openAddDialog()
     })
 
     importMenuItem?.addEventListener('click', () => {
       this.openImportDialog()
+    })
+
+    fileMenuItem?.addEventListener('click', () => {
+      fileInput?.click()
+    })
+
+    fileInput?.addEventListener('change', async (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0]
+      if (!file) {
+        return
+      }
+      try {
+        const text = await decompressFile(file)
+        await this.addAccountsFromUris(text)
+      } catch (error) {
+        AppToaster.showToast(
+          `Не удалось импортировать из файла.\n${(error as Error).message}`,
+          'error',
+        )
+      } finally {
+        fileInput.value = ''
+      }
     })
 
     addDialog.addEventListener('close', async () => {
@@ -287,9 +343,21 @@ class AccountAddDialog extends HTMLElement {
           period,
         }
         try {
-          await AccountList.addItem(data)
+          const { id } = await AccountList.addItem(data)
+          AppToaster.showToast(
+            `Добавлен аккаунт: ${data.label}`,
+            'info',
+            8000,
+            {
+              text: 'Перейти',
+              url: `/#${id}`,
+            },
+          )
         } catch (error) {
-          AppToaster.showToast((error as Error).message, 'error')
+          AppToaster.showToast(
+            `Не удалось добавить аккаунт: ${data.label}.\n${(error as Error).message}`,
+            'error',
+          )
           throw error
         }
         addForm.reset()
@@ -302,20 +370,16 @@ class AccountAddDialog extends HTMLElement {
         const formData = new FormData(importForm)
         const uriInput = formData.get('import-form-uri') as string | null
         if (uriInput) {
-          const lines = uriInput
-            .split('\n')
-            .map((item) => item.trim())
-            .filter((item) => item)
-          for (const uri of lines) {
-            try {
-              const data = parseTotpauthURI(uri)
-              await AccountList.addItem(data)
-            } catch (error) {
-              AppToaster.showToast((error as Error).message, 'error')
-              throw error
-            }
+          try {
+            await this.addAccountsFromUris(uriInput)
+          } catch (error) {
+            AppToaster.showToast(
+              `Не удалось импортировать из ссылки.\n${(error as Error).message}`,
+              'error',
+            )
+          } finally {
+            importForm.reset()
           }
-          importForm.reset()
         }
       }
       this.closeImportDialog()
@@ -392,5 +456,17 @@ form button[value='submit'] {
 
 ::placeholder {
   font-size: 0.875rem;
+}
+
+#file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 </style>

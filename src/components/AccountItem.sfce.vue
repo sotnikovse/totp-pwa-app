@@ -6,9 +6,12 @@
       <countdown-timer></countdown-timer>
     </div>
     <dl></dl>
-    <div>
+    <div class="actions">
       <button type="button" class="copy-link-button" part="button">
         Скопировать ссылку
+      </button>
+      <button type="button" class="export-link-button" part="button">
+        Экспорт
       </button>
       <button type="button" class="delete-button" part="button button-delete">
         Удалить
@@ -20,6 +23,11 @@
 <script lang="ts">
 import { DEFAULT_PERIOD } from '../constants'
 import { getAccount } from '../data/db'
+import {
+  compressText,
+  downloadFile,
+  filenameFromLabel,
+} from '../utils/compress'
 import { escapeHTML } from '../utils/escape'
 import { createTotpauthURI } from '../utils/otpauth'
 import AccountList from './AccountList.sfce.vue'
@@ -97,8 +105,16 @@ class AccountItem extends HTMLElement {
         const accountId = this.getAttribute('account-id') as string
         const result = confirm('Вы уверены что хотите удалить?')
         if (result) {
-          await AccountList.deleteItem(accountId)
-          history.length > 2 ? history.back() : location.replace('/')
+          try {
+            await AccountList.deleteItem(accountId)
+            history.length > 2 ? history.back() : location.replace('/')
+            AppToaster.showToast('Аккаунт удален', 'info')
+          } catch (error) {
+            AppToaster.showToast(
+              `Не удалось удалить аккаунт.\n${(error as Error).message}`,
+              'error',
+            )
+          }
         }
       })
 
@@ -111,10 +127,30 @@ class AccountItem extends HTMLElement {
           try {
             const uri = createTotpauthURI(data)
             await navigator.clipboard.writeText(uri)
-            AppToaster.showToast('Ссылка скопирована!', 'info')
+            AppToaster.showToast('Ссылка скопирована', 'info')
           } catch (error) {
             AppToaster.showToast(
-              `Не удалось скопировать: ${(error as Error).message}`,
+              `Не удалось скопировать ссылку.\n${(error as Error).message}`,
+              'error',
+            )
+          }
+        }
+      })
+
+    this.shadowRoot
+      ?.querySelector('.export-link-button')
+      ?.addEventListener('click', async () => {
+        const accountId = this.getAttribute('account-id') as string
+        const data = await getAccount(accountId)
+        if (data) {
+          try {
+            const uri = createTotpauthURI(data)
+            const compressedData = await compressText(uri)
+            const filename = filenameFromLabel(data.label)
+            downloadFile(filename, compressedData)
+          } catch (error) {
+            AppToaster.showToast(
+              `Не удалось сохранить файл.\n${(error as Error).message}`,
               'error',
             )
           }
@@ -171,10 +207,6 @@ declare global {
   column-gap: 0.5rem;
 }
 
-.delete-button {
-  margin-left: 0.5rem;
-}
-
 dl {
   margin: 0;
   display: grid;
@@ -189,6 +221,13 @@ dl > dt {
 dl > dd {
   margin-left: 1rem;
   grid-column-start: 2;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+  column-gap: 0.75rem;
 }
 
 @media (prefers-color-scheme: dark) {

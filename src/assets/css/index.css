@@ -100,9 +100,18 @@ section,
   gap: 1.5rem;
 }
 
-account-list section:not([loading]):empty::after {
+account-list:not([loading]) section:empty::after {
   color: rgb(var(--colors-gray));
   content: "Нет данных";
+}
+.account-list__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  column-gap: 0.75rem;
+}
+account-list[loading] #account-list-export-button {
+  display: none;
 }
 
 .button,

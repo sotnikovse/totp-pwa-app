@@ -91,7 +91,7 @@ class AccountCode extends HTMLElement {
           element.innerText = code || '-'
         }
       } catch (error) {
-        let message = 'Ошибка получения кода'
+        let message = 'Не удалось получения кода'
         if ((error as Error).message === 'Invalid base32 secret') {
           message = 'Невалидный секрет'
         } else if ((error as Error).message === 'Invalid algorithm') {
@@ -119,10 +119,10 @@ class AccountCode extends HTMLElement {
         if (text) {
           try {
             await navigator.clipboard.writeText(text)
-            AppToaster.showToast('Код скопирован!', 'info')
+            AppToaster.showToast('Код скопирован', 'info')
           } catch (error) {
             AppToaster.showToast(
-              `Не удалось скопировать: ${(error as Error).message}`,
+              `Не удалось скопировать код.\n${(error as Error).message}`,
               'error',
             )
           }
