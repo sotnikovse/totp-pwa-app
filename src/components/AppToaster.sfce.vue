@@ -92,7 +92,7 @@ declare global {
   right: 0;
   bottom: 0;
   left: 0;
-  padding: 1rem;
+  padding: 2rem 1rem;
   display: flex;
   justify-content: center;
   pointer-events: none;
@@ -103,6 +103,7 @@ declare global {
   width: max-content;
   max-width: 20rem;
   display: flex;
+  align-items: center;
   flex-direction: column-reverse;
   gap: 0.5rem;
 }

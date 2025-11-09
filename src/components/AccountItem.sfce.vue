@@ -111,9 +111,9 @@ class AccountItem extends HTMLElement {
           const uri = createTotpauthURI(data)
           try {
             navigator.clipboard.writeText(uri)
-            AppToaster.showToast('Скопировано!', 'info')
+            AppToaster.showToast('Ссылка скопирована!', 'info')
           } catch (error) {
-            AppToaster.showToast('Не удалось скопировать!', 'error')
+            AppToaster.showToast('Не удалось скопировать ссылку!', 'error')
           }
         }
       })

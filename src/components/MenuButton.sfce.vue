@@ -137,7 +137,7 @@ declare global {
 
 ::slotted([role='menuitem']) {
   font-size: 0.875rem;
-  padding: 0.375rem 0.625rem;
+  padding: 0.5rem 0.75rem;
   cursor: default;
   text-align: left;
 }
@@ -166,6 +166,11 @@ declare global {
     ::slotted([role='menuitem']:hover) {
       background-color: #404040;
     }
+  }
+  [role='menu'] {
+    box-shadow:
+      0 4px 6px -1px rgb(0 0 0 / 0.1),
+      0 2px 4px -2px rgb(0 0 0 / 0.1);
   }
 }
 </style>

@@ -88,7 +88,7 @@ header a.logo {
 
 footer {
   padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.75rem;
   font-size: 0.875rem;
   line-height: 1.25rem;
   color: rgb(var(--colors-gray));

@@ -13,7 +13,6 @@
     aria-label="Удалить"
   >
     <svg
-      part="icon"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
@@ -256,6 +255,20 @@ label {
 }
 label > small {
   color: rgb(var(--colors-gray-dark));
+}
+
+button[aria-label='Удалить'] > svg {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+button[aria-label='Удалить'] {
+  color: rgb(var(--colors-gray)) !important;
+}
+@media (hover: hover) {
+  button[aria-label='Удалить']:hover {
+    color: rgb(var(--colors-red)) !important;
+  }
 }
 
 @media (prefers-color-scheme: dark) {

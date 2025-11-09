@@ -119,9 +119,9 @@ class AccountCode extends HTMLElement {
         if (text) {
           try {
             navigator.clipboard.writeText(text)
-            AppToaster.showToast('Скопировано!', 'info')
+            AppToaster.showToast('Код скопирован!', 'info')
           } catch (error) {
-            AppToaster.showToast('Не удалось скопировать!', 'error')
+            AppToaster.showToast('Не удалось скопировать код!', 'error')
           }
         }
       })
@@ -165,6 +165,7 @@ declare global {
   align-items: center;
 }
 [role='button'] {
+  font-variant-numeric: tabular-nums;
   font-size: 1.875rem;
   font-weight: 500;
   letter-spacing: 0.1em;
@@ -175,20 +176,10 @@ declare global {
   border-radius: 0.5rem;
   background-color: rgb(var(--colors-gray-light) / 0.15);
 }
-@media (hover: hover) {
-  :host(:not(.error)) [role='button']:hover {
-    background-color: rgb(var(--colors-gray-light) / 0.3);
-  }
-}
 
 @media (prefers-color-scheme: dark) {
   [role='button'] {
     background-color: rgb(var(--colors-gray-dark) / 0.15);
-  }
-  @media (hover: hover) {
-    :host(:not(.error)) [role='button']:hover {
-      background-color: rgb(var(--colors-gray-dark) / 0.3);
-    }
   }
 }
 :host([card]) [role='button'] {
