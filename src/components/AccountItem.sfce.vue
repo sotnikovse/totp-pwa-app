@@ -63,7 +63,6 @@ class AccountItem extends HTMLElement {
     const data = await getAccount(accountId)
     if (listElement && data) {
       let html = ''
-      html += this.createDescriptionInner('ИД', data.id.toString())
       html += this.createDescriptionInner('Название', data.label)
       if (data.issuer) {
         html += this.createDescriptionInner('Сервис', data.issuer)
