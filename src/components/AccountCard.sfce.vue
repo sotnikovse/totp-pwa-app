@@ -135,7 +135,7 @@ class AccountCard extends HTMLElement {
       ?.querySelector('button')
       ?.addEventListener('click', async (e) => {
         e.stopPropagation()
-        const result = confirm('Вы уверены что хотите удалить?')
+        const result = confirm('Вы уверены, что хотите удалить аккаунт?')
         if (result) {
           try {
             await AccountList.deleteItem(accountId)

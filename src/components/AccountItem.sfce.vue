@@ -30,11 +30,13 @@ import {
 } from '../utils/compress'
 import { escapeHTML } from '../utils/escape'
 import { createTotpauthURI } from '../utils/otpauth'
+import type { Account } from '../types'
 import AccountList from './AccountList.sfce.vue'
 import AppToaster from './AppToaster.sfce.vue'
 
 class AccountItem extends HTMLElement {
   private period = DEFAULT_PERIOD
+  private accountData: Account | undefined
 
   static observedAttributes = ['account-id', 'period']
 
@@ -58,9 +60,22 @@ class AccountItem extends HTMLElement {
       ?.setAttribute('period', String(this.period))
   }
 
-  private async updateDescription(accountId: string) {
+  private async setAccount(accountId: string) {
+    try {
+      const data = await getAccount(accountId)
+      if (data) {
+        this.accountData = data
+        this.updateDescription(data)
+      } else {
+        throw new Error('Аккаунт не найден')
+      }
+    } catch (error) {
+      throw new Error(`Ошибка получения аккаунта ${accountId}, ${error}`)
+    }
+  }
+
+  private updateDescription(data: Account) {
     const listElement = this.shadowRoot?.querySelector<HTMLDListElement>('dl')
-    const data = await getAccount(accountId)
     if (listElement && data) {
       let html = ''
       html += this.createDescriptionInner('Название', data.label)
@@ -101,18 +116,19 @@ class AccountItem extends HTMLElement {
     this.shadowRoot
       ?.querySelector('.delete-button')
       ?.addEventListener('click', async () => {
-        const accountId = this.getAttribute('account-id') as string
-        const result = confirm('Вы уверены что хотите удалить?')
-        if (result) {
-          try {
-            await AccountList.deleteItem(accountId)
-            history.length > 2 ? history.back() : location.replace('/')
-            AppToaster.showToast('Аккаунт удален', 'info')
-          } catch (error) {
-            AppToaster.showToast(
-              `Не удалось удалить аккаунт.\n${(error as Error).message}`,
-              'error',
-            )
+        if (this.accountData) {
+          const result = confirm('Вы уверены, что хотите удалить аккаунт?')
+          if (result) {
+            try {
+              await AccountList.deleteItem(this.accountData.id)
+              history.length > 2 ? history.back() : location.replace('/')
+              AppToaster.showToast('Аккаунт удален', 'info')
+            } catch (error) {
+              AppToaster.showToast(
+                `Не удалось удалить аккаунт.\n${(error as Error).message}`,
+                'error',
+              )
+            }
           }
         }
       })
@@ -120,11 +136,9 @@ class AccountItem extends HTMLElement {
     this.shadowRoot
       ?.querySelector('.copy-link-button')
       ?.addEventListener('click', async () => {
-        const accountId = this.getAttribute('account-id') as string
-        const data = await getAccount(accountId)
-        if (data) {
+        if (this.accountData) {
           try {
-            const uri = createTotpauthURI(data)
+            const uri = createTotpauthURI(this.accountData)
             await navigator.clipboard.writeText(uri)
             AppToaster.showToast('Ссылка скопирована', 'info')
           } catch (error) {
@@ -139,13 +153,11 @@ class AccountItem extends HTMLElement {
     this.shadowRoot
       ?.querySelector('.export-link-button')
       ?.addEventListener('click', async () => {
-        const accountId = this.getAttribute('account-id') as string
-        const data = await getAccount(accountId)
-        if (data) {
+        if (this.accountData) {
           try {
-            const uri = createTotpauthURI(data)
+            const uri = createTotpauthURI(this.accountData)
             const compressedData = await compressText(uri)
-            const filename = filenameFromLabel(data.label)
+            const filename = filenameFromLabel(this.accountData.label)
             downloadFile(filename, compressedData)
           } catch (error) {
             AppToaster.showToast(
@@ -173,7 +185,7 @@ class AccountItem extends HTMLElement {
     switch (name) {
       case 'account-id':
         if (newValue) {
-          this.updateDescription(newValue as string)
+          this.setAccount(newValue as string)
           this.shadowRoot
             ?.querySelector<HTMLElement>('account-code')
             ?.setAttribute('account-id', newValue as string)

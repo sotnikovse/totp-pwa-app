@@ -61,7 +61,7 @@ class AccountList extends HTMLElement {
     return item
   }
 
-  static async deleteItem(id: string) {
+  static async deleteItem(id: string | number) {
     await deleteAccount(id)
     document.querySelector(`account-list [account-id="${id}"]`)?.remove()
   }
